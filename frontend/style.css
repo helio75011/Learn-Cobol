@@ -1,0 +1,182 @@
+:root {
+  --fond: #12161c;
+  --fond-carte: #1b212a;
+  --fond-carte-2: #232b36;
+  --bord: #2f3947;
+  --texte: #e8edf4;
+  --texte-doux: #97a3b4;
+  --vert: #58cc02;
+  --vert-fonce: #46a302;
+  --rouge: #ff4b4b;
+  --jaune: #ffc800;
+  --bleu: #1cb0f6;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--fond);
+  color: var(--texte);
+  font: 16px/1.55 "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+main { max-width: 780px; margin: 0 auto; padding: 20px 16px 60px; }
+
+/* ---- barre ---- */
+.barre {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; padding: 12px 20px;
+  background: #0d1116; border-bottom: 1px solid var(--bord);
+}
+.logo { font-weight: 700; letter-spacing: .3px; }
+.barre-infos { display: flex; gap: 10px; }
+.pastille {
+  background: var(--fond-carte-2); border: 1px solid var(--bord);
+  border-radius: 999px; padding: 4px 12px; font-size: 14px;
+}
+
+/* ---- blocs ---- */
+.carte {
+  background: var(--fond-carte); border: 1px solid var(--bord);
+  border-radius: 14px; padding: 18px 20px; margin-bottom: 16px;
+}
+.entete h1 { margin: 4px 0 10px; font-size: 26px; }
+h1 { font-size: 24px; margin: 0 0 12px; }
+h2 { font-size: 17px; margin: 0 0 10px; }
+.titre-section { margin: 22px 0 12px; }
+.surtitre { color: var(--texte-doux); font-size: 13px; text-transform: uppercase; letter-spacing: .6px; margin: 0 0 6px; }
+.muet { color: var(--texte-doux); font-size: 14px; }
+.chiffres { color: var(--texte-doux); font-size: 14px; margin: 12px 0 0; }
+.centre { text-align: center; }
+.grosse-icone { font-size: 56px; }
+
+.badge {
+  margin-top: 14px; padding: 12px 14px;
+  background: var(--fond-carte-2); border: 1px dashed var(--bord); border-radius: 12px;
+  font-size: 14px;
+}
+.badge b { color: var(--jaune); }
+
+/* ---- parcours ---- */
+.parcours { display: flex; flex-direction: column; gap: 10px; }
+.lecon {
+  display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+  background: var(--fond-carte); border: 1px solid var(--bord); border-radius: 14px;
+  padding: 14px 16px; color: var(--texte); font: inherit; cursor: pointer;
+  border-bottom-width: 4px;
+}
+.lecon:hover { background: var(--fond-carte-2); }
+.lecon .num {
+  flex: 0 0 40px; height: 40px; border-radius: 50%;
+  background: var(--vert-fonce); color: #fff; font-weight: 700;
+  display: grid; place-items: center;
+}
+.lecon.faite .num { background: var(--jaune); color: #12161c; }
+.lecon .meta { color: var(--texte-doux); font-size: 13px; }
+
+/* ---- théorie ---- */
+.bloc { margin-bottom: 16px; }
+.bloc h3 { font-size: 15px; margin: 0 0 8px; color: var(--bleu); }
+.bloc p { margin: 0 0 10px; }
+.bloc ul, .bloc ol { margin: 0 0 10px; padding-left: 22px; }
+.bloc li { margin-bottom: 5px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table-scroll { overflow-x: auto; }
+th, td { border: 1px solid var(--bord); padding: 7px 10px; text-align: left; vertical-align: top; }
+th { background: var(--fond-carte-2); }
+.def { margin-bottom: 10px; }
+.def b { color: var(--texte); }
+.def .ex { color: var(--texte-doux); font-size: 14px; font-family: Consolas, monospace; }
+.note { border-left: 4px solid var(--jaune); background: var(--fond-carte-2); padding: 10px 14px; border-radius: 0 10px 10px 0; }
+
+/* ---- exercices ---- */
+.progression { height: 10px; background: var(--fond-carte-2); border-radius: 999px; overflow: hidden; margin-bottom: 16px; }
+.jauge { height: 100%; width: 0; background: var(--vert); transition: width .25s; }
+.consigne { font-size: 18px; font-weight: 600; margin: 0 0 16px; }
+
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option {
+  text-align: left; padding: 12px 14px; border-radius: 12px;
+  background: var(--fond-carte-2); border: 2px solid var(--bord); border-bottom-width: 4px;
+  color: var(--texte); font: inherit; cursor: pointer;
+}
+.option:hover { border-color: #46536a; }
+.option.choisie { border-color: var(--bleu); background: #12303f; }
+.option.juste { border-color: var(--vert); background: #16300a; }
+.option.fausse { border-color: var(--rouge); background: #3a1414; }
+.option:disabled { cursor: default; }
+
+.duo { display: flex; gap: 12px; }
+.duo .option { flex: 1; text-align: center; font-weight: 600; }
+
+.paires { display: flex; flex-direction: column; gap: 10px; }
+.paire { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.paire span { flex: 1 1 200px; }
+select, input[type=text] {
+  background: var(--fond-carte-2); color: var(--texte);
+  border: 2px solid var(--bord); border-radius: 10px; padding: 8px 10px; font: inherit;
+}
+input[type=text] { min-width: 140px; }
+.trou { font-family: Consolas, monospace; }
+
+.ordre-cible {
+  min-height: 52px; border: 2px dashed var(--bord); border-radius: 12px;
+  padding: 8px; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+}
+.jeton {
+  background: var(--fond-carte-2); border: 2px solid var(--bord); border-bottom-width: 4px;
+  border-radius: 10px; padding: 8px 12px; color: var(--texte); font: inherit; cursor: pointer;
+}
+.jeton:disabled { opacity: .35; cursor: default; }
+.reserve { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.texte-trous { font-size: 17px; line-height: 2.2; }
+
+/* ---- retour ---- */
+.retour { border-radius: 14px; padding: 14px 18px; margin-bottom: 16px; }
+.retour.ok { background: #16300a; border: 1px solid var(--vert); }
+.retour.ko { background: #3a1414; border: 1px solid var(--rouge); }
+.verdict { font-weight: 700; margin: 0 0 6px; }
+.retour p:last-child { margin: 0; }
+
+/* ---- boutons ---- */
+.rangee-boutons { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
+.rangee-boutons.centre { justify-content: center; }
+.btn {
+  margin-left: auto;
+  background: var(--vert); color: #0d1116; border: none; border-bottom: 4px solid var(--vert-fonce);
+  border-radius: 12px; padding: 12px 20px; font: inherit; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px; cursor: pointer;
+}
+.rangee-boutons.centre .btn { margin: 0; }
+.btn:disabled { background: #39424f; color: #7d8899; border-bottom-color: #2b333e; cursor: not-allowed; }
+.btn-secondaire { background: var(--bleu); border-bottom-color: #1288c4; margin-left: 0; }
+.btn-fantome {
+  background: transparent; color: var(--texte-doux);
+  border: 2px solid var(--bord); border-bottom-width: 2px; margin-left: 0;
+}
+
+/* ---- cartes de révision ---- */
+.flashcard {
+  background: var(--fond-carte); border: 2px solid var(--bord); border-radius: 16px;
+  min-height: 190px; display: grid; place-items: center; text-align: center;
+  padding: 26px; cursor: pointer; position: relative; margin-bottom: 16px;
+}
+.flashcard p { font-size: 19px; margin: 0; }
+.flashcard.verso { border-color: var(--vert); }
+.indice { position: absolute; bottom: 10px; font-size: 12px; color: var(--texte-doux); }
+
+/* ---- rapport ---- */
+.rapport { list-style: none; padding: 0; margin: 0; font-size: 14px; }
+.rapport li { padding: 5px 0; border-bottom: 1px solid var(--bord); }
+.rapport li:last-child { border: none; }
+.ok-txt { color: var(--vert); }
+.ko-txt { color: var(--rouge); }
+
+@media (max-width: 520px) {
+  .duo { flex-direction: column; }
+  .rangee-boutons { flex-wrap: wrap; }
+}

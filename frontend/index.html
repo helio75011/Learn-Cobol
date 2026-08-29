@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learn-Cobol — aperçu</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="barre">
+  <span class="logo">🏛️ Learn-Cobol</span>
+  <span class="barre-infos">
+    <span id="jauge-coeurs" class="pastille" hidden>❤️ <b id="coeurs">0</b></span>
+    <span id="jauge-xp" class="pastille" hidden>⭐ <b id="xp">0</b> XP</span>
+  </span>
+</header>
+
+<main>
+
+  <!-- chargeur de secours (ouverture en file://) -->
+  <section id="chargeur" class="carte" hidden>
+    <h2>Charger une unité</h2>
+    <p id="chargeur-msg" class="muet"></p>
+    <input type="file" id="fichier" accept="application/json,.json">
+  </section>
+
+  <!-- accueil : sommaire de l'unité -->
+  <section id="ecran-accueil" class="ecran" hidden>
+    <div class="carte entete">
+      <p class="surtitre"><span id="a-categorie"></span> · unité <span id="a-ordre"></span> · <span id="a-niveau"></span></p>
+      <h1 id="a-titre"></h1>
+      <p id="a-resume"></p>
+      <p class="chiffres">
+        <span id="a-lecons"></span> leçons · <span id="a-exos"></span> exercices ·
+        <span id="a-cartes"></span> cartes · <span id="a-xp"></span> XP · <span id="a-duree"></span> min
+      </p>
+      <div id="a-badge" class="badge"></div>
+    </div>
+
+    <div class="carte">
+      <h2>Objectifs</h2>
+      <ul id="a-objectifs"></ul>
+    </div>
+
+    <h2 class="titre-section">Parcours</h2>
+    <div id="a-parcours" class="parcours"></div>
+
+    <div class="rangee-boutons">
+      <button id="btn-cartes" class="btn btn-secondaire">🗂️ Cartes de révision</button>
+      <button id="btn-verif" class="btn btn-secondaire">🔎 Vérifier le JSON</button>
+    </div>
+
+    <section id="rapport" class="carte" hidden>
+      <h2>Contrôle des invariants</h2>
+      <ul id="rapport-liste" class="rapport"></ul>
+    </section>
+  </section>
+
+  <!-- théorie -->
+  <section id="ecran-theorie" class="ecran" hidden>
+    <p class="surtitre" id="t-surtitre"></p>
+    <h1 id="t-titre"></h1>
+    <div id="t-blocs"></div>
+    <div class="rangee-boutons">
+      <button id="btn-quitter-theorie" class="btn btn-fantome">Retour</button>
+      <button id="btn-commencer" class="btn">Commencer les exercices →</button>
+    </div>
+  </section>
+
+  <!-- exercice -->
+  <section id="ecran-exo" class="ecran" hidden>
+    <div class="progression"><div id="jauge" class="jauge"></div></div>
+    <p class="surtitre" id="e-surtitre"></p>
+    <div class="carte">
+      <p class="consigne" id="e-consigne"></p>
+      <div id="e-zone"></div>
+    </div>
+    <div id="e-retour" class="retour" hidden>
+      <p id="e-verdict" class="verdict"></p>
+      <p id="e-explication"></p>
+    </div>
+    <div class="rangee-boutons">
+      <button id="btn-abandon" class="btn btn-fantome">Quitter</button>
+      <button id="btn-valider" class="btn" disabled>Vérifier</button>
+      <button id="btn-suite" class="btn" hidden>Continuer →</button>
+    </div>
+  </section>
+
+  <!-- bilan -->
+  <section id="ecran-bilan" class="ecran" hidden>
+    <div class="carte centre">
+      <div id="b-icone" class="grosse-icone"></div>
+      <h1 id="b-titre"></h1>
+      <p id="b-detail"></p>
+      <div class="rangee-boutons centre">
+        <button id="btn-rejouer" class="btn btn-secondaire">↺ Recommencer</button>
+        <button id="btn-accueil" class="btn">Retour au parcours</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- cartes de révision -->
+  <section id="ecran-cartes" class="ecran" hidden>
+    <h1>Cartes de révision</h1>
+    <p class="surtitre" id="c-position"></p>
+    <div id="c-carte" class="flashcard">
+      <p id="c-face"></p>
+      <span class="indice">clique pour retourner</span>
+    </div>
+    <div class="rangee-boutons centre">
+      <button id="c-prec" class="btn btn-secondaire">← Précédente</button>
+      <button id="c-suiv" class="btn btn-secondaire">Suivante →</button>
+    </div>
+    <div class="rangee-boutons centre">
+      <button id="c-retour" class="btn btn-fantome">Retour au parcours</button>
+    </div>
+  </section>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
