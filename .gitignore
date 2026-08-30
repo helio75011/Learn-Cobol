@@ -2,3 +2,4 @@ data
 CLAUDE.md
 node_modules
 .env
+.semgrep

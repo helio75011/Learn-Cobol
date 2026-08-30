@@ -1,8 +1,11 @@
+# Pile complète Learn-Cobol : base de données + API (qui sert aussi le frontend).
+# Variables lues dans le .env de ce dossier.
+
 services:
   mongodb:
     image: mongo:latest
     container_name: mongodb
-    restart: always
+    restart: unless-stopped
     ports:
       - "${MONGO_PORT:-27017}:27017"
     environment:
@@ -10,6 +13,43 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_MOT_DE_PASSE:-secretpassword}
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: dev          # « production » pour l'image allégée sans nodemon
+    container_name: learn-cobol-api
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy   # l'API ne démarre qu'une fois Mongo prêt
+    env_file: .env
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      # Dans le réseau Compose, la base se joint par son nom de service.
+      MONGO_URI: mongodb://${MONGO_UTILISATEUR:-root}:${MONGO_MOT_DE_PASSE:-secretpassword}@mongodb:27017/${MONGO_BASE:-learn_cobol}?authSource=admin
+      # Les montages liés Windows ne propagent pas les événements fichiers.
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      - ./backend:/app/backend            # code monté : nodemon recharge à chaud
+      - ./frontend:/app/frontend          # idem pour l'aperçu
+      - /app/backend/node_modules         # dépendances de l'image, pas celles de l'hôte
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/sante').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
 volumes:
   mongo_data:

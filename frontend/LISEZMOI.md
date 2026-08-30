@@ -9,13 +9,15 @@ Ce n'est pas le client définitif : c'est un banc d'essai du format `schema_vers
 Depuis la **racine du projet** (`Learn-Cobol/`) :
 
 ```
-python -m http.server 8000
+docker compose up -d
 ```
 
-puis ouvrir <http://localhost:8000/frontend/>.
+puis ouvrir <http://localhost:3000/frontend/>. L'API sert la page et le JSON,
+et `/` redirige vers `/frontend/`.
 
-Le serveur doit démarrer à la racine, pas dans `frontend/` : la page lit
-`../backend/data/COBOL/1-introduction.json`.
+Un serveur statique suffit aussi (`python -m http.server 8000` **depuis la racine**,
+pas dans `frontend/` : la page lit `../backend/data/COBOL/1-introduction.json`),
+mais sans l'API la progression n'est pas enregistrée.
 
 En ouvrant `index.html` directement (`file://`), `fetch` est bloqué par le
 navigateur — un sélecteur de fichier apparaît alors pour charger un JSON à la main.
@@ -31,7 +33,8 @@ navigateur — un sélecteur de fichier apparaît alors pour charger un JSON à 
 
 ## Limites assumées
 
-- Aucune persistance : la progression est perdue au rechargement
+- Aucune persistance : la progression est perdue au rechargement — l'API
+  `/api/progression` existe mais n'est pas encore appelée par cette page
 - Une seule unité à la fois, pas de déverrouillage entre unités
 - Pas de répétition espacée réelle (les cartes défilent simplement)
 

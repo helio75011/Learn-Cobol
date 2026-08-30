@@ -6,16 +6,50 @@ survivent au rechargement de la page.
 
 ## Démarrer
 
+Toute la pile est dans Docker — base, API et frontend. Depuis la **racine** :
+
 ```bash
-docker compose up -d          # depuis la racine — lance MongoDB
-cd backend && npm run dev     # ou npm start
+docker compose up -d --build     # --build seulement la 1re fois ou après un npm install
 ```
 
 - API : <http://localhost:3000/api>
-- Aperçu frontend : <http://localhost:3000/frontend/> (plus besoin de `python -m http.server`)
+- Aperçu frontend : <http://localhost:3000/frontend/>
 
-Le compte admin est créé automatiquement au démarrage à partir du `.env` de la racine.
-`npm run admin:init` réinitialise son mot de passe sur la valeur du `.env`.
+Le code est monté en volume : **nodemon recharge l'API à chaque modification**, sans
+rebuild ni redémarrage du conteneur. Le compte admin est créé au démarrage à partir
+du `.env` de la racine.
+
+| Commande | Effet |
+|---|---|
+| `docker compose up -d` | démarre la pile en arrière-plan |
+| `docker compose logs -f api` | suit les logs de l'API |
+| `docker compose restart api` | redémarre l'API |
+| `docker compose exec api npm run admin:init` | réinitialise le mot de passe admin |
+| `docker compose exec api sh` | shell dans le conteneur |
+| `docker compose down` | arrête tout (le volume `mongo_data` est conservé) |
+| `docker compose down -v` | arrête **et efface la base** |
+| `docker compose up -d --build` | reconstruit l'image (après un `npm install`) |
+
+### Sans Docker
+
+Le mode local reste possible : Mongo doit tourner (`docker compose up -d mongodb`),
+puis `cd backend && npm run dev`. Le `.env` pointe alors sur `localhost:27017` ;
+dans Compose, la variable `MONGO_URI` est réécrite pour viser le service `mongodb`.
+
+## Images Docker
+
+`backend/Dockerfile` est multi-étapes, avec la racine du projet pour contexte de
+build afin de reproduire l'arborescence `/app/backend` + `/app/frontend` attendue
+par `src/config/env.js`.
+
+| Cible | Usage |
+|---|---|
+| `deps` | installation des dépendances, mise en cache tant que le lock ne change pas |
+| `dev` | **cible par défaut de Compose** — nodemon, code monté en volume |
+| `production` | `npm ci --omit=dev`, `node server.js`, utilisateur non privilégié |
+
+Pour l'image allégée : passer `target: production` dans `docker-compose.yml`
+(ou `docker build --target production -f backend/Dockerfile .`).
 
 ## Architecture
 
