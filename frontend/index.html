@@ -10,13 +10,48 @@
 
 <header class="barre">
   <span class="logo">🏛️ Learn-Cobol</span>
+
   <span class="barre-infos">
     <span id="jauge-coeurs" class="pastille" hidden>❤️ <b id="coeurs">0</b></span>
     <span id="jauge-xp" class="pastille" hidden>⭐ <b id="xp">0</b> XP</span>
+    <span class="pastille pastille-total" title="XP enregistrés sur le serveur">
+      💾 <b id="xp-total">0</b> XP <span class="muet">enregistrés</span>
+    </span>
+
+    <span class="compte">
+      <span id="u-avatar" class="avatar">👤</span>
+      <span class="identite">
+        <b id="u-nom">…</b>
+        <small id="u-role"></small>
+      </span>
+      <span id="u-jeton" class="jeton-role">…</span>
+      <button id="btn-deconnexion" class="lien-deconnexion" title="Se déconnecter" hidden>⏻</button>
+    </span>
   </span>
 </header>
 
+<div id="bandeau" class="bandeau"></div>
+
 <main>
+
+  <!-- connexion -->
+  <section id="ecran-connexion" class="ecran" hidden>
+    <div class="carte carte-connexion">
+      <h1>Connexion</h1>
+      <p class="muet">La progression est nominative : elle est enregistrée sur le serveur,
+        sous le compte utilisé pour se connecter.</p>
+      <form id="form-connexion" autocomplete="on">
+        <label for="champ-utilisateur">Nom d'utilisateur</label>
+        <input type="text" id="champ-utilisateur" name="username" value="admin" autocomplete="username" required>
+        <label for="champ-motdepasse">Mot de passe</label>
+        <input type="password" id="champ-motdepasse" name="password" autocomplete="current-password" required>
+        <p id="erreur-connexion" class="etat etat-ko"></p>
+        <button type="submit" id="btn-connexion" class="btn">Se connecter</button>
+      </form>
+      <p class="muet">Le compte administrateur est celui du fichier <code>.env</code>
+        (<code>ADMIN_NOM_UTILISATEUR</code> / <code>ADMIN_MOT_DE_PASSE</code>).</p>
+    </div>
+  </section>
 
   <!-- chargeur de secours (ouverture en file://) -->
   <section id="chargeur" class="carte" hidden>
@@ -38,6 +73,17 @@
       <div id="a-badge" class="badge"></div>
     </div>
 
+    <div class="carte compte-rendu">
+      <h2>Ma progression</h2>
+      <div class="stats">
+        <div class="stat"><b id="xp-unite">0</b><span>XP sur cette unité</span></div>
+        <div class="stat"><b id="lecons-reussies">0</b><span>leçons réussies</span></div>
+        <div class="stat"><b id="avancement">0 %</b><span>de l'unité</span></div>
+      </div>
+      <div class="progression"><div id="jauge-globale" class="jauge"></div></div>
+      <p id="etat-sauvegarde" class="etat etat-session"></p>
+    </div>
+
     <div class="carte">
       <h2>Objectifs</h2>
       <ul id="a-objectifs"></ul>
@@ -50,6 +96,14 @@
       <button id="btn-cartes" class="btn btn-secondaire">🗂️ Cartes de révision</button>
       <button id="btn-verif" class="btn btn-secondaire">🔎 Vérifier le JSON</button>
     </div>
+
+    <section class="carte panneau-admin reserve-admin" hidden>
+      <h2>🛡️ Outils d'administration</h2>
+      <p class="muet">Visibles parce que la session porte le droit « reinitialiser ».</p>
+      <div class="rangee-boutons">
+        <button id="btn-reset" class="btn btn-danger">Réinitialiser la progression de cette unité</button>
+      </div>
+    </section>
 
     <section id="rapport" class="carte" hidden>
       <h2>Contrôle des invariants</h2>
@@ -93,6 +147,7 @@
       <div id="b-icone" class="grosse-icone"></div>
       <h1 id="b-titre"></h1>
       <p id="b-detail"></p>
+      <p id="b-sauvegarde" class="etat etat-session"></p>
       <div class="rangee-boutons centre">
         <button id="btn-rejouer" class="btn btn-secondaire">↺ Recommencer</button>
         <button id="btn-accueil" class="btn">Retour au parcours</button>
@@ -119,6 +174,7 @@
 
 </main>
 
+<script src="session.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

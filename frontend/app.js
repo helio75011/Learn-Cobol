@@ -1,7 +1,9 @@
-/* Learn-Cobol — client de test du format d'unité (schema_version 2.0).
-   But : visualiser et jouer une unité JSON, pas un moteur de jeu définitif. */
+/* Learn-Cobol — client d'aperçu du parcours (schema_version 2.0).
+   Contenu et progression viennent de l'API : voir backend/src.
+   La session et les appels réseau sont dans session.js. */
 
-const CHEMIN_DEFAUT = '../backend/data/COBOL/1-introduction.json';
+const UNITE_DEFAUT = '1-introduction';
+const CHEMIN_SECOURS = '../backend/data/COBOL/1-introduction.json';
 
 const $ = (sel, racine = document) => racine.querySelector(sel);
 const creer = (balise, cls, txt) => {
@@ -22,16 +24,34 @@ const leconsFaites = new Set();
 /* ------------------------------------------------------------------ */
 
 async function init() {
+  const { connecte } = await Session.demarrer();
+  if (!connecte) { ecran('connexion'); return; }
+  await entrer();
+}
+
+/* Après connexion : contenu de l'unité, puis progression du compte. */
+async function entrer() {
   try {
-    const rep = await fetch(CHEMIN_DEFAUT, { cache: 'no-store' });
-    if (!rep.ok) throw new Error('HTTP ' + rep.status);
-    charger(await rep.json());
+    let id = UNITE_DEFAUT;
+    const liste = await Session.api('/unites');
+    if (liste.unites.length && !liste.unites.some(u => u.id === id)) id = liste.unites[0].id;
+    unite = (await Session.api('/unites/' + encodeURIComponent(id))).unite;
   } catch (err) {
-    $('#chargeur').hidden = false;
-    $('#chargeur-msg').textContent =
-      'Chargement automatique impossible (' + err.message + '). ' +
-      'Lance un serveur local, ou choisis un fichier JSON ci-dessous.';
+    // API muette : on retombe sur le JSON servi en statique.
+    try {
+      const rep = await fetch(CHEMIN_SECOURS, { cache: 'no-store' });
+      if (!rep.ok) throw new Error('HTTP ' + rep.status);
+      unite = await rep.json();
+    } catch (err2) {
+      $('#chargeur').hidden = false;
+      $('#chargeur-msg').textContent =
+        'Unité introuvable (' + err.message + '). Choisis un fichier JSON ci-dessous.';
+      return;
+    }
   }
+
+  await Session.chargerUnite(unite.id);
+  charger(unite);
 }
 
 $('#fichier').addEventListener('change', (ev) => {
@@ -51,13 +71,14 @@ $('#fichier').addEventListener('change', (ev) => {
 
 function charger(donnees) {
   unite = donnees;
+  $('#chargeur').hidden = true;
   document.title = unite.titre + ' — Learn-Cobol';
   rendreAccueil();
   ecran('accueil');
 }
 
 function ecran(nom) {
-  ['accueil', 'theorie', 'exo', 'bilan', 'cartes']
+  ['connexion', 'accueil', 'theorie', 'exo', 'bilan', 'cartes']
     .forEach(n => { $('#ecran-' + n).hidden = (n !== nom); });
   window.scrollTo(0, 0);
 }
@@ -93,17 +114,29 @@ function rendreAccueil() {
 
   const parcours = $('#a-parcours');
   parcours.innerHTML = '';
+  let xpUnite = 0;
   unite.lecons.forEach(l => {
-    const btn = creer('button', 'lecon' + (leconsFaites.has(l.id) ? ' faite' : ''));
+    const etat = Session.etatLecon(l.id);
+    const reussie = (etat && etat.reussie) || leconsFaites.has(l.id);
+    const acquis = etat ? etat.xp_obtenu : 0;
+    xpUnite += acquis;
+
+    const btn = creer('button', 'lecon' + (reussie ? ' faite' : ''));
     const bloc = creer('div');
-    bloc.append(
-      creer('div', null, l.titre),
-      creer('div', 'meta', l.duree_estimee_minutes + ' min · ' + l.exercices.length + ' exercices · ' + l.xp + ' XP')
-    );
-    btn.append(creer('div', 'num', leconsFaites.has(l.id) ? '★' : String(l.ordre)), bloc);
+    const meta = l.duree_estimee_minutes + ' min · ' + l.exercices.length + ' exercices · ' + (etat
+      ? acquis + '/' + l.xp + ' XP enregistrés · ' + etat.tentatives + ' tentative(s)'
+      : l.xp + ' XP · jamais jouée');
+    bloc.append(creer('div', null, l.titre), creer('div', 'meta', meta));
+    btn.append(creer('div', 'num', reussie ? '★' : String(l.ordre)), bloc);
     btn.addEventListener('click', () => ouvrirLecon(l));
     parcours.append(btn);
   });
+
+  const pourcent = Math.round(xpUnite / unite.gamification.xp_total * 100);
+  $('#xp-unite').textContent = xpUnite;
+  $('#avancement').textContent = pourcent + ' %';
+  $('#jauge-globale').style.width = pourcent + '%';
+  Session.rendreEntete();
 
   majJauges(null);
 }
@@ -126,6 +159,7 @@ function ouvrirLecon(lecon) {
     ordre: lecon.exercices.slice(),
     idx: 0,
     xp: 0,
+    reussis: 0,
     coeurs: unite.gamification.coeurs_max,
     reponse: null,
     valide: false
@@ -448,7 +482,7 @@ function valider() {
   const juste = corriger(exo, p.reponse);
   p.valide = true;
 
-  if (juste) p.xp += exo.xp; else p.coeurs -= 1;
+  if (juste) { p.xp += exo.xp; p.reussis += 1; } else { p.coeurs -= 1; }
 
   if (exo.type === 'qcm' || exo.type === 'vrai_faux') {
     const bonnes = exo.type === 'qcm' ? exo.reponse.map(String) : [String(exo.reponse)];
@@ -484,7 +518,7 @@ $('#btn-suite').addEventListener('click', () => {
 /* Bilan                                                               */
 /* ------------------------------------------------------------------ */
 
-function bilan(reussi) {
+async function bilan(reussi) {
   const p = partie;
   if (reussi) leconsFaites.add(p.lecon.id);
   $('#b-icone').textContent = reussi ? '🏆' : '💔';
@@ -493,6 +527,27 @@ function bilan(reussi) {
     ? p.xp + ' XP sur ' + p.lecon.xp + ' · ' + p.coeurs + ' cœur(s) restant(s)'
     : 'Tu as tenu ' + (p.idx + 1) + ' exercice(s) sur ' + p.ordre.length + '. Reprends la leçon.';
   ecran('bilan');
+
+  const zone = $('#b-sauvegarde');
+  zone.className = 'etat etat-encours';
+  zone.textContent = Session.connecte()
+    ? 'Enregistrement de la progression…'
+    : 'Non connecté — cette partie ne sera pas enregistrée.';
+
+  const res = await Session.enregistrerLecon(unite.id, p.lecon.id, {
+    xp_obtenu: p.xp,
+    coeurs_restants: p.coeurs,
+    exercices_reussis: p.reussis,
+    reussie: reussi
+  });
+
+  if (res.ok) {
+    const u = Session.utilisateur();
+    zone.className = 'etat etat-ok';
+    zone.textContent = '💾 ' + res.lecon.xp_obtenu + '/' + res.lecon.xp_max +
+      ' XP enregistrés sur le compte ' + u.nom_utilisateur +
+      ' — total unité ' + res.progression.xp_total + ' XP (tentative n°' + res.lecon.tentatives + ')';
+  }
 }
 
 $('#btn-rejouer').addEventListener('click', () => ouvrirLecon(partie.lecon));
@@ -592,6 +647,50 @@ $('#btn-verif').addEventListener('click', () => {
               creer('span', null, paire[1]));
     liste.append(li);
   });
+});
+
+$('#btn-reset').addEventListener('click', async () => {
+  if (!Session.estAdmin()) return;
+  if (!confirm('Remettre à zéro la progression enregistrée pour « ' + unite.titre + ' » ?')) return;
+  try {
+    await Session.reinitialiser(unite.id);
+    leconsFaites.clear();
+    rendreAccueil();
+    Session.etat('ok', 'Progression de l’unité remise à zéro.');
+  } catch (err) {
+    Session.etat('ko', 'Réinitialisation impossible : ' + err.message);
+  }
+});
+
+/* ------------------------------------------------------------------ */
+/* Connexion / déconnexion                                             */
+/* ------------------------------------------------------------------ */
+
+$('#form-connexion').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const bouton = $('#btn-connexion');
+  const erreur = $('#erreur-connexion');
+  erreur.textContent = '';
+  bouton.disabled = true;
+  bouton.textContent = 'Connexion…';
+  try {
+    await Session.connecter($('#champ-utilisateur').value.trim(), $('#champ-motdepasse').value);
+    $('#champ-motdepasse').value = '';
+    await entrer();
+  } catch (err) {
+    erreur.textContent = err.message;
+  } finally {
+    bouton.disabled = false;
+    bouton.textContent = 'Se connecter';
+  }
+});
+
+$('#btn-deconnexion').addEventListener('click', () => {
+  Session.deconnecter();
+  unite = null;
+  partie = null;
+  leconsFaites.clear();
+  ecran('connexion');
 });
 
 init();
